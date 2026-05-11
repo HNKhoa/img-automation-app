@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Ensure curl_cffi wheel
+        run: pip install "curl_cffi>=0.7.0"
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Mypy
+        run: mypy backend
+
+      - name: Pytest
+        run: python -m pytest -q
+
+      - name: Frontend static check
+        run: node tests/frontend-static-check.mjs
+
+      - name: Frontend unit tests
+        run: node tests/frontend-unit.mjs
+
+      - name: Install Node deps
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Frontend render check
+        run: node tests/frontend-render-check.mjs
+
+      - name: PyInstaller smoke (Windows only)
+        if: matrix.os == 'windows-latest'
+        run: pyinstaller --noconfirm --onefile app.py
+
+  relay-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npx -y eslint relay/cloudflare-worker.js --no-config-lookup --global console --global URL --global Response --global Headers --global fetch --global AbortSignal --global TextEncoder --global crypto

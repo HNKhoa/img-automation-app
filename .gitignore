@@ -1,0 +1,21 @@
+.env
+.handoff/
+.uv-cache/
+.uv-python/
+.venv/
+.sixth/
+.test-artifacts/
+.app-open.log
+.app-open.err.log
+.open-app-runner.ps1
+__pycache__/
+*.py[cod]
+*.log
+.mypy_cache/
+.ruff_cache/
+.wrangler/
+build/
+dist/
+node_modules/
+package-lock.json
+img test/

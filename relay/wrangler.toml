@@ -1,0 +1,7 @@
+name = "pollinations-relay"
+main = "cloudflare-worker.js"
+compatibility_date = "2025-01-01"
+
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "<paste-id-here>"

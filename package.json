@@ -1,0 +1,14 @@
+{
+  "name": "img-automation-app-frontend-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:static": "node tests/frontend-static-check.mjs",
+    "test:unit": "node --test tests/frontend-unit.mjs",
+    "test:render": "node tests/frontend-render-check.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

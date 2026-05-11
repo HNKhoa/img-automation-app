@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Img automation App</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="desktop-frame">
+      <section class="workspace ai-bg">
+        <header class="app-topbar glass-card">
+          <div class="app-brand">
+            <div class="brand-mark">IA</div>
+            <div>
+              <h1>Img automation App</h1>
+              <p>Outfit swap prompt workspace</p>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <span class="status-pill" id="statusPill">Sẵn sàng</span>
+            <button id="testApiBtn" class="secondary-btn">Test API</button>
+            <button id="topGenerateBtn" class="primary-btn">Tạo prompt</button>
+          </div>
+        </header>
+
+        <div class="content-grid">
+          <section class="form-stack">
+            <section class="upload-grid" aria-label="Nhóm ảnh tham chiếu">
+              <article class="upload-card glass-card" data-role="model">
+                <div class="upload-card-head">
+                  <div>
+                    <span class="role-badge">A.1</span>
+                    <h2>Model identity</h2>
+                  </div>
+                  <button id="clearModelBtn" class="icon-btn" type="button" aria-label="Xóa ảnh Model identity">×</button>
+                </div>
+                <label class="upload-control">
+                  <input id="modelUpload" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+                  <span class="upload-icon" aria-hidden="true">&uarr;</span>
+                  <span>Upload</span>
+                </label>
+                <div class="thumbs" id="modelThumbs"></div>
+              </article>
+
+              <article class="upload-card glass-card" data-role="outfit">
+                <div class="upload-card-head">
+                  <div>
+                    <span class="role-badge">A.2</span>
+                    <h2>Outfit source</h2>
+                  </div>
+                  <button id="clearOutfitBtn" class="icon-btn" type="button" aria-label="Xóa ảnh Outfit source">×</button>
+                </div>
+                <label class="upload-control">
+                  <input id="outfitUpload" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+                  <span class="upload-icon" aria-hidden="true">&uarr;</span>
+                  <span>Upload</span>
+                </label>
+                <div class="thumbs" id="outfitThumbs"></div>
+              </article>
+
+              <article class="upload-card glass-card" data-role="background">
+                <div class="upload-card-head">
+                  <div>
+                    <span class="role-badge">A.3</span>
+                    <h2>Background</h2>
+                  </div>
+                  <button id="clearBackgroundBtn" class="icon-btn" type="button" aria-label="Xóa ảnh Background">×</button>
+                </div>
+                <label class="upload-control">
+                  <input id="backgroundUpload" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+                  <span class="upload-icon" aria-hidden="true">&uarr;</span>
+                  <span>Upload</span>
+                </label>
+                <div class="thumbs" id="backgroundThumbs"></div>
+              </article>
+            </section>
+
+            <section class="panel control-panel glass-card">
+              <div class="panel-title">
+                <div>
+                  <h2>Cấu hình</h2>
+                  <p>API, model và thông số render.</p>
+                </div>
+                <button id="toggleKeyBtn" class="ghost-btn">Hiện key</button>
+              </div>
+
+              <div class="setup-grid">
+                <label class="api-key-field">
+                  Secret API key
+                  <input id="apiKeyInput" type="password" placeholder="sk_..." autocomplete="off" spellcheck="false" />
+                </label>
+                <label>
+                  Model
+                  <select id="modelSelect">
+                    <option value="gpt-5.4-nano">GPT-5.4 Nano</option>
+                    <option value="gpt-5-nano">GPT-5 Nano</option>
+                    <option value="gemini-flash-lite-3.1">Gemini 2.5 Flash Lite</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="setup-grid four">
+                <label>
+                  Đích
+                  <select id="targetSelect">
+                    <option value="chatgpt_img">ChatGPT Image</option>
+                    <option value="gpt_image">GPT Image</option>
+                    <option value="gg_banana2">GG Banana2</option>
+                  </select>
+                </label>
+                <label>
+                  Phong cách
+                  <select id="styleSelect">
+                    <option>High-end fashion editorial</option>
+                    <option>E-commerce clean studio</option>
+                    <option>Luxury lookbook</option>
+                    <option>Soft cinematic portrait</option>
+                  </select>
+                </label>
+                <label>
+                  Tỷ lệ
+                  <select id="aspectSelect">
+                    <option>1:1</option>
+                    <option>2:3</option>
+                    <option>3:4</option>
+                    <option>9:16</option>
+                    <option>16:9</option>
+                  </select>
+                </label>
+                <label>
+                  Chất lượng
+                  <select id="qualitySelect">
+                    <option>high</option>
+                    <option>balanced</option>
+                    <option>draft</option>
+                  </select>
+                </label>
+                <label>
+                  Độ phân giải
+                  <select id="resolutionSelect">
+                    <option>2K</option>
+                    <option>1024px</option>
+                    <option>1536px</option>
+                    <option>4K</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="panel glass-card">
+              <div class="panel-title">
+                <div>
+                  <h2>Nội dung bổ sung</h2>
+                  <p>Mood, camera, lighting, background hoặc ràng buộc thêm.</p>
+                </div>
+              </div>
+              <textarea id="userRequestInput" rows="4" placeholder="Ví dụ: giữ mặt mẫu, bám sát outfit gốc, ánh sáng studio mềm, nền tối giản."></textarea>
+            </section>
+
+            <section class="cta-bar">
+              <button id="heroGenerateBtn" class="primary-btn cta-btn">Tạo prompt</button>
+            </section>
+          </section>
+
+          <section class="panel output-panel glass-card">
+            <div class="panel-title output-title">
+              <div>
+                <h2>Prompt Preview</h2>
+                <p>Kết quả API trả về để copy sang ChatGPT Image.</p>
+              </div>
+              <div class="output-actions">
+                <button id="copyBtn" class="secondary-btn">Copy</button>
+                <button id="downloadBtn" class="secondary-btn">Tải TXT</button>
+                <button id="handoffBtn" class="secondary-btn">Mở ChatGPT</button>
+                <button id="clearOutputBtn" class="icon-btn" type="button" aria-label="Xóa output">×</button>
+              </div>
+            </div>
+            <div id="messageBanner" class="message-banner" hidden></div>
+            <template id="cfBannerTemplate">
+              <div class="cf-banner-body">
+                <h4>CLOUDFLARE_ACCESS_DENIED</h4>
+                <p>Tất cả endpoint Pollinations đang bị chặn. App sẽ tự thử lại, hoặc bạn có thể dán URL relay riêng.</p>
+                <div class="cf-actions">
+                  <button class="danger-btn" type="button" data-action="cf-retry">Thử lại</button>
+                  <input class="relay-input" type="url" data-action="cf-relay-input" placeholder="https://your-relay.example.com/v1/chat/completions" />
+                  <button class="secondary-btn" type="button" data-action="cf-set-relay">Đặt Custom Relay</button>
+                  <button class="ghost-btn" type="button" data-action="cf-dismiss">Đóng</button>
+                </div>
+                <div class="cf-meta">Custom Relay sẽ được lưu cục bộ trên máy này.</div>
+              </div>
+            </template>
+            <div id="outputSections" class="output-sections" aria-live="polite"></div>
+            <pre id="outputBox" class="sr-only"></pre>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
