@@ -1,5 +1,7 @@
 # Img automation App
 
+[![Built with Pollinations](https://img.shields.io/badge/Built%20with-Pollinations-8a2be2?style=for-the-badge)](https://pollinations.ai)
+
 ## Cloudflare resilience
 
 Pollinations requests use three layers:
