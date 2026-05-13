@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 
-const src = fs.readFileSync("frontend/app.js", "utf8");
-const modesSrc = fs.readFileSync("frontend/modes.js", "utf8");
+// Normalize line endings because GitHub Actions checks out text files as CRLF on
+// windows-latest, while the helper extraction regexes are line-oriented.
+const src = fs.readFileSync("frontend/app.js", "utf8").replace(/\r\n/g, "\n");
+const modesSrc = fs.readFileSync("frontend/modes.js", "utf8").replace(/\r\n/g, "\n");
 
 const ctx = vm.createContext({
   document: { getElementById: () => null },
