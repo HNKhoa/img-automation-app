@@ -23,6 +23,7 @@ QUALITY_PROFILES = [
 ]
 
 STYLE_OPTIONS = [
+    "None",
     "High-end fashion editorial",
     "E-commerce clean studio",
     "Luxury lookbook",
@@ -41,3 +42,27 @@ ROLE_LABELS = {
     "background": "REFERENCE 3 - A.3 optional background / final Image 3. Scene type, environment, lighting, perspective, depth, atmosphere, palette, and mood. If missing, fallback to Image 1 background.",
 }
 MAX_TOTAL_IMAGE_PAYLOAD_BYTES = 1_200_000
+
+GENERATION_MODE_IDS = {
+    "OUTFIT_SWAP": "outfit-swap-json",
+    "CHARACTER_JSON": "character-json",
+    "PRODUCT_DETAIL_SHOTS": "product-detail-shots",
+    "STORYBOARD_UNIFIED": "storyboard-unified",
+    "REFERENCE_PACK": "reference-pack",
+    "IMAGE_TO_VIDEO": "image-to-video",
+    "JSON_TO_NATURAL": "json-to-natural-prompt",
+}
+GENERIC_MODE_IDS = frozenset(value for key, value in GENERATION_MODE_IDS.items() if key != "OUTFIT_SWAP")
+GENERIC_REFERENCE_LABEL_TEMPLATE = (
+    "REFERENCE IMAGE {index}: Use as a visual consistency reference for the selected prompt mode."
+)
+GENERIC_REFERENCE_ROLE = "reference"
+MAX_GENERIC_REFERENCE_IMAGES = 5
+
+
+def is_outfit_mode(mode_id: str) -> bool:
+    return mode_id == GENERATION_MODE_IDS["OUTFIT_SWAP"]
+
+
+def is_generic_mode(mode_id: str) -> bool:
+    return mode_id in GENERIC_MODE_IDS

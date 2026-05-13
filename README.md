@@ -21,6 +21,40 @@ Old `.env` files using `POLLINATIONS_ENDPOINT=` still work as a single endpoint.
 
 Desktop app cross-platform dùng `pywebview`: Python backend + HTML/CSS/JS frontend. MVP tập trung mode `outfit_swap` theo `SKILL.md` và `outfit_swap_skill.md`.
 
+## Generation modes
+
+App hiện có 7 mode trong dropdown `Chế độ tạo prompt`. `outfit-swap-json` vẫn là MVP và giữ nguyên payload/validator cũ; 6 mode còn lại chạy theo plugin track generic với role ảnh `reference`.
+
+| mode_id | Output | Ảnh | Ghi chú |
+| --- | --- | --- | --- |
+| `outfit-swap-json` | text | A.1/A.2 bắt buộc, A.3 tùy chọn | Thay trang phục giữ identity |
+| `character-json` | json | tối đa 5 reference | JSON nhân vật/portrait |
+| `product-detail-shots` | text | tối đa 5 reference | 9 shot chi tiết sản phẩm |
+| `storyboard-unified` | json | tối đa 5 reference | Storyboard 3-12 scene, gồm image prompt + video motion prompt |
+| `reference-pack` | text | tối đa 5 reference | Character/Background/Product reference pack |
+| `image-to-video` | json | tối đa 5 reference | Prompt chuyển ảnh sang video |
+| `json-to-natural-prompt` | text | không gửi ảnh | Chuyển JSON sang prompt tự nhiên |
+
+Ghi chú UI: khi chọn mode generic, cụm A.1/A.2/A.3, trường `Đích` và nút handoff ChatGPT sẽ collapse mềm. Style mặc định của generic là `None` để tránh bias fashion; riêng `storyboard-unified` có hint số scene dưới ô nội dung, ví dụ `6 canh`, `9 scenes`, `12 frames`.
+
+Ví dụ payload generic:
+
+```json
+{
+  "api_key": "sk_...",
+  "mode": "character-json",
+  "model": "gpt-5.4-nano",
+  "style": "High-end fashion editorial",
+  "aspect_ratio": "1:1",
+  "resolution": "2K",
+  "quality": "high",
+  "user_request": "Create a cyber fashion portrait.",
+  "images": [
+    { "role": "reference", "name": "ref.jpg", "type": "image/jpeg", "dataUrl": "data:image/jpeg;base64,..." }
+  ]
+}
+```
+
 ## Chạy app
 
 ```powershell

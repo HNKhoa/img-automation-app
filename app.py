@@ -20,6 +20,7 @@ from backend.constants import (
     STYLE_OPTIONS,
     TARGET_OPTIONS,
 )
+from backend.modes import list_generation_modes
 from backend.services.chrome_profiles import ChromeProfileService
 from backend.services.prompt_workflow import PromptWorkflow
 
@@ -51,6 +52,7 @@ class DesktopApi:
             "style_options": STYLE_OPTIONS,
             "aspect_ratio_options": ASPECT_RATIO_OPTIONS,
             "resolution_options": RESOLUTION_OPTIONS,
+            "generation_modes": list_generation_modes(),
             "profiles": self.chrome_profiles.list_profiles(),
         }
 
@@ -61,6 +63,7 @@ class DesktopApi:
         try:
             return self.workflow.generate(payload)
         except Exception as exc:
+            (APP_ROOT / "Img automation App.error.log").write_text(traceback.format_exc(), encoding="utf-8")
             return {
                 "ok": False,
                 "error": {

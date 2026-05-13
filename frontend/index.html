@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+    />
     <title>Img automation App</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -13,20 +17,32 @@
           <div class="app-brand">
             <div class="brand-mark">IA</div>
             <div>
-              <h1>Img automation App</h1>
-              <p>Outfit swap prompt workspace</p>
+              <h1 data-i18n="app.title">Img automation App</h1>
+              <p data-i18n="app.subtitle">Không gian tạo prompt thay trang phục</p>
             </div>
           </div>
           <div class="topbar-actions">
-            <span class="status-pill" id="statusPill">Sẵn sàng</span>
-            <button id="testApiBtn" class="secondary-btn">Test API</button>
-            <button id="topGenerateBtn" class="primary-btn">Tạo prompt</button>
+            <span class="status-pill" id="statusPill" data-i18n="status.ready">Sẵn sàng</span>
+            <button id="testApiBtn" class="secondary-btn" data-i18n="btn.test_api">Test API</button>
+            <button id="settingsBtn" class="secondary-btn" data-i18n="btn.settings">Cài đặt</button>
           </div>
         </header>
 
         <div class="content-grid">
           <section class="form-stack">
-            <section class="upload-grid" aria-label="Nhóm ảnh tham chiếu">
+            <section class="panel mode-panel glass-card">
+              <div class="mode-bar">
+                <label for="modeSelect" data-i18n="label.mode">Chế độ tạo prompt</label>
+                <select id="modeSelect"></select>
+                <button type="button" id="modeHelpToggle" class="icon-btn" aria-label="Trợ giúp mode" data-i18n-aria="helper.mode" aria-expanded="false">?</button>
+              </div>
+              <div id="modeHelper" class="mode-helper" hidden>
+                <p class="mode-purpose"></p>
+                <p class="mode-usage"></p>
+              </div>
+            </section>
+
+            <section id="outfitOnlySection" class="upload-grid" aria-label="Nhóm ảnh tham chiếu" data-outfit-only>
               <article class="upload-card glass-card" data-role="model">
                 <div class="upload-card-head">
                   <div>
@@ -76,73 +92,69 @@
               </article>
             </section>
 
+            <section id="genericReferenceUpload" class="upload-card generic-upload glass-card" hidden>
+              <div class="upload-card-head">
+                <div>
+                  <span class="role-badge">REF</span>
+                  <h2 data-i18n="label.reference_images">Ảnh tham chiếu</h2>
+                </div>
+                  <button type="button" id="clearGenericRefBtn" class="icon-btn" aria-label="Xóa ảnh tham chiếu" data-i18n-aria="label.reference_images">×</button>
+              </div>
+              <label class="upload-control">
+                <input id="genericRefInput" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+                <span class="upload-icon" aria-hidden="true">&uarr;</span>
+                <span>Upload</span>
+              </label>
+              <p class="hint" id="genericRefHint"></p>
+              <div id="genericRefThumbs" class="thumbs thumb-grid"></div>
+            </section>
+
             <section class="panel control-panel glass-card">
               <div class="panel-title">
                 <div>
-                  <h2>Cấu hình</h2>
-                  <p>API, model và thông số render.</p>
+                  <h2 data-i18n="label.config">Cấu hình</h2>
+                  <p data-i18n="hint.config">Model và thông số render.</p>
                 </div>
-                <button id="toggleKeyBtn" class="ghost-btn">Hiện key</button>
               </div>
 
-              <div class="setup-grid">
-                <label class="api-key-field">
-                  Secret API key
-                  <input id="apiKeyInput" type="password" placeholder="sk_..." autocomplete="off" spellcheck="false" />
-                </label>
+              <div class="setup-grid model-row">
                 <label>
-                  Model
+                  <span data-i18n="label.model">Model</span>
                   <select id="modelSelect">
-                    <option value="gpt-5.4-nano">GPT-5.4 Nano</option>
-                    <option value="gpt-5-nano">GPT-5 Nano</option>
-                    <option value="gemini-flash-lite-3.1">Gemini 2.5 Flash Lite</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
               </div>
 
               <div class="setup-grid four">
-                <label>
-                  Đích
+                <label id="targetField" class="setting-target" data-outfit-only>
+                  <span data-i18n="label.target">Đích</span>
                   <select id="targetSelect">
-                    <option value="chatgpt_img">ChatGPT Image</option>
-                    <option value="gpt_image">GPT Image</option>
-                    <option value="gg_banana2">GG Banana2</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
                 <label>
-                  Phong cách
+                  <span data-i18n="label.style">Phong cách</span>
                   <select id="styleSelect">
-                    <option>High-end fashion editorial</option>
-                    <option>E-commerce clean studio</option>
-                    <option>Luxury lookbook</option>
-                    <option>Soft cinematic portrait</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
                 <label>
-                  Tỷ lệ
+                  <span data-i18n="label.aspect">Tỷ lệ</span>
                   <select id="aspectSelect">
-                    <option>1:1</option>
-                    <option>2:3</option>
-                    <option>3:4</option>
-                    <option>9:16</option>
-                    <option>16:9</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
                 <label>
-                  Chất lượng
+                  <span data-i18n="label.quality">Chất lượng</span>
                   <select id="qualitySelect">
-                    <option>high</option>
-                    <option>balanced</option>
-                    <option>draft</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
                 <label>
-                  Độ phân giải
+                  <span data-i18n="label.resolution">Độ phân giải</span>
                   <select id="resolutionSelect">
-                    <option>2K</option>
-                    <option>1024px</option>
-                    <option>1536px</option>
-                    <option>4K</option>
+                    <option value="" disabled selected hidden data-i18n="placeholder.loading">Đang tải...</option>
                   </select>
                 </label>
               </div>
@@ -151,28 +163,29 @@
             <section class="panel glass-card">
               <div class="panel-title">
                 <div>
-                  <h2>Nội dung bổ sung</h2>
-                  <p>Mood, camera, lighting, background hoặc ràng buộc thêm.</p>
+                  <h2 data-i18n="label.extra_notes">Nội dung bổ sung</h2>
+                  <p data-i18n="hint.extra_notes">Mood, camera, lighting, background hoặc ràng buộc thêm.</p>
                 </div>
               </div>
-              <textarea id="userRequestInput" rows="4" placeholder="Ví dụ: giữ mặt mẫu, bám sát outfit gốc, ánh sáng studio mềm, nền tối giản."></textarea>
+              <textarea id="userRequestInput" rows="4" placeholder="Ví dụ: giữ mặt mẫu, bám sát outfit gốc, ánh sáng studio mềm, nền tối giản." data-i18n-placeholder="placeholder.extra_notes"></textarea>
+              <p id="storyboardSceneHint" class="scene-hint" hidden>Canh storyboard: 9</p>
             </section>
 
             <section class="cta-bar">
-              <button id="heroGenerateBtn" class="primary-btn cta-btn">Tạo prompt</button>
+              <button id="heroGenerateBtn" class="primary-btn cta-btn" data-i18n="btn.generate">Tạo prompt</button>
             </section>
           </section>
 
           <section class="panel output-panel glass-card">
             <div class="panel-title output-title">
               <div>
-                <h2>Prompt Preview</h2>
-                <p>Kết quả API trả về để copy sang ChatGPT Image.</p>
+                <h2 data-i18n="label.output">Prompt Preview</h2>
+                <p data-i18n="hint.output">Kết quả API trả về để copy sang ChatGPT Image.</p>
               </div>
               <div class="output-actions">
-                <button id="copyBtn" class="secondary-btn">Copy</button>
-                <button id="downloadBtn" class="secondary-btn">Tải TXT</button>
-                <button id="handoffBtn" class="secondary-btn">Mở ChatGPT</button>
+                <button id="copyBtn" class="secondary-btn" data-i18n="btn.copy">Copy</button>
+                <button id="downloadBtn" class="secondary-btn" data-i18n="btn.download">Tải TXT</button>
+                <button id="handoffBtn" class="secondary-btn" data-outfit-only disabled data-i18n="btn.open_chatgpt">Mở ChatGPT</button>
                 <button id="clearOutputBtn" class="icon-btn" type="button" aria-label="Xóa output">×</button>
               </div>
             </div>
@@ -180,14 +193,14 @@
             <template id="cfBannerTemplate">
               <div class="cf-banner-body">
                 <h4>CLOUDFLARE_ACCESS_DENIED</h4>
-                <p>Tất cả endpoint Pollinations đang bị chặn. App sẽ tự thử lại, hoặc bạn có thể dán URL relay riêng.</p>
+                <p data-i18n="message.cf_body">Tất cả endpoint Pollinations đang bị chặn. App sẽ tự thử lại, hoặc bạn có thể dán URL relay riêng.</p>
                 <div class="cf-actions">
-                  <button class="danger-btn" type="button" data-action="cf-retry">Thử lại</button>
+                  <button class="danger-btn" type="button" data-action="cf-retry" data-i18n="btn.retry">Thử lại</button>
                   <input class="relay-input" type="url" data-action="cf-relay-input" placeholder="https://your-relay.example.com/v1/chat/completions" />
-                  <button class="secondary-btn" type="button" data-action="cf-set-relay">Đặt Custom Relay</button>
-                  <button class="ghost-btn" type="button" data-action="cf-dismiss">Đóng</button>
+                  <button class="secondary-btn" type="button" data-action="cf-set-relay" data-i18n="btn.set_custom_relay">Đặt Custom Relay</button>
+                  <button class="ghost-btn" type="button" data-action="cf-dismiss" data-i18n="btn.close">Đóng</button>
                 </div>
-                <div class="cf-meta">Custom Relay sẽ được lưu cục bộ trên máy này.</div>
+                <div class="cf-meta" data-i18n="message.cf_meta">Custom Relay sẽ được lưu cục bộ trên máy này.</div>
               </div>
             </template>
             <div id="outputSections" class="output-sections" aria-live="polite"></div>
@@ -196,6 +209,31 @@
         </div>
       </section>
     </main>
+    <div id="settingsModal" class="settings-modal" hidden>
+      <section class="settings-panel glass-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="panel-title">
+          <div>
+            <h2 id="settingsTitle" data-i18n="settings.title">Cài đặt</h2>
+            <p data-i18n="settings.subtitle">API key, ngôn ngữ và tuỳ chọn kết nối.</p>
+          </div>
+          <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="Đóng cài đặt" data-i18n-aria="settings.close">×</button>
+        </div>
+        <label class="language-field">
+          <span data-i18n="settings.language">Ngôn ngữ</span>
+          <select id="languageSelect">
+            <option value="vi" data-i18n="settings.language.vi">Tiếng Việt</option>
+            <option value="en" data-i18n="settings.language.en">English</option>
+          </select>
+        </label>
+        <label class="api-key-field">
+          <span data-i18n="settings.api_key">Secret API key</span>
+          <input id="apiKeyInput" type="password" placeholder="sk_..." autocomplete="off" spellcheck="false" />
+        </label>
+        <button id="toggleKeyBtn" class="ghost-btn" type="button" data-i18n="settings.show_key">Hiện key</button>
+      </section>
+    </div>
+    <script src="./i18n-runtime.js"></script>
+    <script src="./modes.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

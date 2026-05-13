@@ -12,7 +12,7 @@ const page = await browser.newPage({ viewport: { width: 1365, height: 900 }, dev
 await page.goto(pathToFileURL(path.join(root, "frontend", "index.html")).href);
 
 const checks = await page.evaluate(() => {
-  const selectors = [".desktop-frame", ".app-topbar", ".upload-control", ".upload-grid", ".content-grid", ".output-panel", "#heroGenerateBtn", "#apiKeyInput"];
+  const selectors = [".desktop-frame", ".app-topbar", ".upload-control", ".upload-grid", ".content-grid", ".output-panel", "#heroGenerateBtn", "#settingsBtn"];
   return selectors.map((selector) => {
     const node = document.querySelector(selector);
     const rect = node?.getBoundingClientRect();
@@ -38,8 +38,41 @@ if (await page.locator(".window-bar").count()) {
   throw new Error("The old fake browser/window header should not render.");
 }
 
+await page.locator("#settingsBtn").click();
+if (!(await page.locator("#apiKeyInput").isVisible())) {
+  throw new Error("API key input should be visible after opening Settings.");
+}
+await page.locator("#closeSettingsBtn").click();
+
 if (await page.locator(".metric-grid").count()) {
   throw new Error("Static metric cards should not render in the productivity layout.");
+}
+
+await page.evaluate(() => {
+  window.GenerationModes.applyModeUI(
+    {
+      id: "character-json",
+      kind: "generic",
+      output_type: "json",
+      allow_images: true,
+      purpose: "Tao JSON nhan vat.",
+      usage: "Upload reference neu can.",
+    },
+    {
+      outfitOnlySection: document.getElementById("outfitOnlySection"),
+      genericReferenceUpload: document.getElementById("genericReferenceUpload"),
+      targetField: document.getElementById("targetField"),
+      handoffBtn: document.getElementById("handoffBtn"),
+      modePurpose: document.querySelector("#modeHelper .mode-purpose"),
+      modeUsage: document.querySelector("#modeHelper .mode-usage"),
+      genericRefHint: document.getElementById("genericRefHint"),
+      outputSections: document.getElementById("outputSections"),
+    },
+  );
+});
+
+if (!(await page.locator("#genericReferenceUpload").isVisible())) {
+  throw new Error("Generic reference upload should render after switching to a generic image mode.");
 }
 
 await page.screenshot({ path: path.join(artifactDir, "frontend-render.png") });

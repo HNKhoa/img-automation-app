@@ -122,7 +122,7 @@ class PollinationsClient:
 
             retry_after = self._parse_retry_after(response.headers.get("retry-after"))
             if response.status_code in self.RETRYABLE_STATUSES:
-                time.sleep(max(1, min(10, retry_after or 2)))
+                time.sleep(max(5, min(90, retry_after or 5)))
                 retry_response = cffi_requests.post(
                     endpoint,
                     json=body,

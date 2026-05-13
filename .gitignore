@@ -19,3 +19,12 @@ dist/
 node_modules/
 package-lock.json
 img test/
+
+# Local planning / skill source files used while building the app.
+APP_SKILL.md
+CODEX_INSTRUCTIONS.md
+GENERATION_MODES_SKILL.md
+REDESIGN_SPEC.md
+SKILL.md
+outfit_swap_skill.md
+codex/

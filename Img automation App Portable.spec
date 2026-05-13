@@ -1,9 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 # AUTO-RENDERED by tools/build_specs.py - do not hand-edit individual specs.
 
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
 cffi_datas, cffi_binaries, cffi_hiddenimports = collect_all('curl_cffi')
+modes_hiddenimports = collect_submodules('backend.modes')
 
 block_cipher = None
 
@@ -14,6 +15,7 @@ a = Analysis(
     datas=[('frontend', 'frontend'), ('.env.example', '.'), *cffi_datas],
     hiddenimports=[
         *cffi_hiddenimports,
+        *modes_hiddenimports,
         'curl_cffi', '_cffi_backend',
         'PIL', 'PIL.Image', 'PIL.ImageOps',
         'webview', 'webview.platforms.winforms',
