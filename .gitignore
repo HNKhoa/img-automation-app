@@ -13,9 +13,13 @@ __pycache__/
 *.log
 .mypy_cache/
 .ruff_cache/
+.nuitka-cache/
 .wrangler/
 build/
 dist/
+downloads/
+Img automation App*.spec
+installer/windows/vendor/
 node_modules/
 package-lock.json
 img test/

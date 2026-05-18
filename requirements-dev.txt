@@ -3,3 +3,6 @@ pytest>=8.0
 ruff>=0.6
 mypy>=1.10
 pyinstaller>=6.6
+nuitka>=2.4
+ordered-set>=4.1
+zstandard>=0.22

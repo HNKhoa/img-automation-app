@@ -47,7 +47,19 @@ class DesktopApiTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertTrue(result["prompt_file"].endswith("chatgpt_img2_prompt.txt"))
 
+    def test_auto_generate_chatgpt_image_delegates_to_service(self) -> None:
+        api = app.DesktopApi()
+
+        class FakeChatGptAutomation:
+            def generate_image(self, payload: dict) -> dict:
+                return {"ok": True, "uploaded_count": len(payload["images"])}
+
+        api.chatgpt_image_automation = FakeChatGptAutomation()
+        result = api.auto_generate_chatgpt_image({"prompt_text": "hello", "images": [{"role": "model"}]})
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["uploaded_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
-

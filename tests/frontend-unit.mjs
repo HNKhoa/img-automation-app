@@ -109,7 +109,7 @@ test("applyModeUI: generic image mode shows generic upload", () => {
   modeCtx.window.GenerationModes.applyModeUI({ kind: "generic", allow_images: true, purpose: "p", usage: "u" }, d);
   assert.equal(d.outfitOnlySection.classList.contains("is-collapsed"), true);
   assert.equal(d.genericReferenceUpload.hidden, false);
-  assert.equal(d.handoffBtn.classList.contains("is-collapsed"), true);
+  assert.equal(d.handoffBtn.classList.contains("is-collapsed"), false);
 });
 
 test("applyModeUI: json-to-natural hides upload", () => {

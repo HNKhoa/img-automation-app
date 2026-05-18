@@ -44,8 +44,14 @@ for (const selectId of ["modelSelect", "targetSelect", "styleSelect", "aspectSel
 }
 
 const outfitOnlyCount = (html.match(/data-outfit-only/g) || []).length;
-if (outfitOnlyCount < 3) {
+if (outfitOnlyCount < 2) {
   throw new Error("Expected outfit-only elements to use data-outfit-only.");
+}
+
+for (const required of ["chromiumManagerInput", "chromiumProfileIdInput", "chromiumPortInput", "downloadDirInput"]) {
+  if (!html.includes(`id="${required}"`)) {
+    throw new Error(`Chromium automation setting not found: ${required}`);
+  }
 }
 
 if (!html.includes("Content-Security-Policy")) {

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import sys
 import traceback
 from pathlib import Path
@@ -21,12 +22,42 @@ from backend.constants import (
     TARGET_OPTIONS,
 )
 from backend.modes import list_generation_modes
+from backend.services.chatgpt_image_automation import ChatGptAutomationError, ChatGptImageAutomationService
 from backend.services.chrome_profiles import ChromeProfileService
 from backend.services.prompt_workflow import PromptWorkflow
 
 APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", APP_ROOT))
 STARTUP_LOG_PATH = APP_ROOT / "Img automation App.startup.log"
+
+
+def preload_frozen_pywebview_platform() -> None:
+    """Make Nuitka/PyInstaller include pywebview's dynamic GUI backend modules."""
+    if not (getattr(sys, "frozen", False) or "__compiled__" in globals()):
+        return
+    if sys.platform == "win32":
+        import clr  # noqa: F401
+        import clr_loader  # noqa: F401
+        import pythonnet  # noqa: F401
+        import webview.platforms.edgechromium  # noqa: F401
+        _load_frozen_webview_win32_helper()
+        import webview.platforms.winforms  # noqa: F401
+    elif sys.platform == "darwin":
+        import webview.platforms.cocoa  # noqa: F401
+
+
+def _load_frozen_webview_win32_helper() -> None:
+    if "webview.platforms.win32" in sys.modules:
+        return
+    helper = RESOURCE_ROOT / "webview" / "platforms" / "win32.py"
+    if not helper.exists():
+        return
+    spec = importlib.util.spec_from_file_location("webview.platforms.win32", helper)
+    if spec is None or spec.loader is None:
+        return
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["webview.platforms.win32"] = module
+    spec.loader.exec_module(module)
 
 
 def write_startup_log(message: str) -> None:
@@ -41,6 +72,7 @@ class DesktopApi:
         self.config = AppConfig.from_env(APP_ROOT / ".env")
         self.chrome_profiles = ChromeProfileService()
         self.workflow = PromptWorkflow(self.config)
+        self.chatgpt_image_automation = ChatGptImageAutomationService(self.config, APP_ROOT)
 
     def get_bootstrap(self) -> dict[str, Any]:
         return {
@@ -91,8 +123,24 @@ class DesktopApi:
         result["prompt_file"] = str(prompt_file) if prompt_file else None
         return result
 
+    def auto_generate_chatgpt_image(self, payload: dict[str, Any]) -> dict[str, Any]:
+        try:
+            return self.chatgpt_image_automation.generate_image(payload)
+        except ChatGptAutomationError as exc:
+            return exc.to_response()
+        except Exception as exc:
+            (APP_ROOT / "Img automation App.error.log").write_text(traceback.format_exc(), encoding="utf-8")
+            return {
+                "ok": False,
+                "error": {
+                    "code": "UNEXPECTED_CHATGPT_AUTOMATION_ERROR",
+                    "message": str(exc),
+                },
+            }
+
 
 def main() -> None:
+    preload_frozen_pywebview_platform()
     api = DesktopApi()
     frontend = RESOURCE_ROOT / "frontend" / "index.html"
     write_startup_log(

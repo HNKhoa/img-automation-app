@@ -5,30 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self' data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+      content="default-src 'self' data:; img-src 'self' data: blob:; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"
     />
     <title>Img automation App</title>
+    <link rel="icon" type="image/png" href="./assets/app-logo.png" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="desktop-frame">
-      <section class="workspace ai-bg">
-        <header class="app-topbar glass-card">
-          <div class="app-brand">
-            <div class="brand-mark">IA</div>
-            <div>
-              <h1 data-i18n="app.title">Img automation App</h1>
-              <p data-i18n="app.subtitle">Không gian tạo prompt thay trang phục</p>
+      <section class="workspace ai-bg dashboard-shell">
+        <aside class="sidebar glass-card" aria-label="Dashboard menu">
+          <div class="app-brand sidebar-brand">
+            <div class="brand-mark brand-logo" aria-hidden="true">
+              <img class="brand-logo-img" src="./assets/app-logo.png" alt="" />
+              <video class="brand-logo-video" src="./assets/brand-loop.mp4" poster="./assets/app-logo.png" autoplay muted loop playsinline></video>
             </div>
+          </div>
+          <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="Thu gọn menu" aria-expanded="true" title="Thu gọn menu">
+            <span class="toggle-icon" aria-hidden="true"></span>
+          </button>
+          <nav class="sidebar-nav" aria-label="App sections">
+            <button class="sidebar-item is-active" type="button" data-section="generator" aria-current="page" title="Prompt Generator">
+              <span class="sidebar-icon" aria-hidden="true">IA</span>
+              <span class="sidebar-label">Prompt Generator</span>
+            </button>
+            <button class="sidebar-item" type="button" data-section="history" title="History">
+              <span class="sidebar-icon" aria-hidden="true">H</span>
+              <span class="sidebar-label">History</span>
+            </button>
+            <button class="sidebar-item" type="button" data-section="automation" title="Automation">
+              <span class="sidebar-icon" aria-hidden="true">A</span>
+              <span class="sidebar-label">Automation</span>
+            </button>
+          </nav>
+          <div class="sidebar-footer">
+            <button id="settingsBtn" class="sidebar-settings secondary-btn" title="Cài đặt">
+              <span class="sidebar-settings-label" data-i18n="btn.settings">Cài đặt</span>
+            </button>
+            <div class="sidebar-credit" aria-label="Credits">
+              <span>Local workflow</span>
+              <span>Image automation</span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main-workspace">
+        <header class="app-topbar glass-card">
+          <div class="topbar-title">
+            <span class="topbar-kicker">Workspace / <span id="workspaceTitle">Prompt Generator</span></span>
+            <strong data-i18n="app.title">Img automation App</strong>
+            <p data-i18n="app.subtitle">Không gian tạo prompt</p>
           </div>
           <div class="topbar-actions">
             <span class="status-pill" id="statusPill" data-i18n="status.ready">Sẵn sàng</span>
             <button id="testApiBtn" class="secondary-btn" data-i18n="btn.test_api">Test API</button>
-            <button id="settingsBtn" class="secondary-btn" data-i18n="btn.settings">Cài đặt</button>
           </div>
         </header>
 
-        <div class="content-grid">
+        <div id="generatorSection" class="content-grid" data-dashboard-section="generator">
           <section class="form-stack">
             <section class="panel mode-panel glass-card">
               <div class="mode-bar">
@@ -185,7 +219,7 @@
               <div class="output-actions">
                 <button id="copyBtn" class="secondary-btn" data-i18n="btn.copy">Copy</button>
                 <button id="downloadBtn" class="secondary-btn" data-i18n="btn.download">Tải TXT</button>
-                <button id="handoffBtn" class="secondary-btn" data-outfit-only disabled data-i18n="btn.open_chatgpt">Mở ChatGPT</button>
+                <button id="handoffBtn" class="secondary-btn" disabled data-i18n="btn.open_chatgpt">Tạo ảnh trên ChatGPT</button>
                 <button id="clearOutputBtn" class="icon-btn" type="button" aria-label="Xóa output">×</button>
               </div>
             </div>
@@ -207,6 +241,21 @@
             <pre id="outputBox" class="sr-only"></pre>
           </section>
         </div>
+        <section id="historySection" class="dashboard-panel glass-card" data-dashboard-section="history" hidden>
+          <div class="dashboard-panel-content">
+            <span class="role-badge">H</span>
+            <h2>History</h2>
+            <p>Lịch sử prompt sẽ nằm ở đây. Prompt Generator vẫn giữ nguyên toàn bộ logic hiện tại.</p>
+          </div>
+        </section>
+        <section id="automationSection" class="dashboard-panel glass-card" data-dashboard-section="automation" hidden>
+          <div class="dashboard-panel-content">
+            <span class="role-badge">A</span>
+            <h2>Automation</h2>
+            <p>Khu vực quản lý tự động hoá ChatGPT Img2 và Chromium profile sẽ được mở rộng tại đây.</p>
+          </div>
+        </section>
+        </section>
       </section>
     </main>
     <div id="settingsModal" class="settings-modal" hidden>
@@ -228,6 +277,22 @@
         <label class="api-key-field">
           <span data-i18n="settings.api_key">Secret API key</span>
           <input id="apiKeyInput" type="password" placeholder="sk_..." autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="download-dir-field">
+          <span data-i18n="settings.download_dir">Thư mục tải ảnh ChatGPT</span>
+          <input id="downloadDirInput" type="text" placeholder="C:\Users\hongu\Documents\tool_vibe_code\app prompt\downloads" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="chromium-manager-field">
+          <span data-i18n="settings.chromium_manager_url">Chromium Profile Manager URL</span>
+          <input id="chromiumManagerInput" type="text" placeholder="http://127.0.0.1:58001" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="chromium-profile-field">
+          <span data-i18n="settings.chromium_profile_id">Chromium profile ID</span>
+          <input id="chromiumProfileIdInput" type="text" placeholder="9e073bc2ad7c41799366e289602f3ed1" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="chromium-port-field">
+          <span data-i18n="settings.chromium_port">Automation port (debug)</span>
+          <input id="chromiumPortInput" type="number" min="1" max="65535" placeholder="43153" autocomplete="off" spellcheck="false" />
         </label>
         <button id="toggleKeyBtn" class="ghost-btn" type="button" data-i18n="settings.show_key">Hiện key</button>
       </section>

@@ -7,6 +7,7 @@ const state = {
   generationModes: [],
   modeIndex: {},
   styleTouched: false,
+  handoffRunning: false,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -212,6 +213,21 @@ async function bootstrap(retries = 5) {
   const data = await window.pywebview.api.get_bootstrap();
   if (data.config?.has_api_key) {
     $("apiKeyInput").placeholder = tr("placeholder.api_from_env", "?ang d?ng sk key t? .env");
+  }
+  const configuredDownloadDir = localStorage.getItem("chatgpt_download_dir") || data.config?.chromium_download_dir || "";
+  if ($("downloadDirInput")) {
+    $("downloadDirInput").value = configuredDownloadDir;
+  }
+  if ($("chromiumManagerInput")) {
+    $("chromiumManagerInput").value =
+      localStorage.getItem("chromium_profile_manager_url") || data.config?.chromium_profile_manager_url || "http://127.0.0.1:58001";
+  }
+  if ($("chromiumProfileIdInput")) {
+    $("chromiumProfileIdInput").value = localStorage.getItem("chromium_profile_id") || data.config?.chromium_profile_id || "";
+  }
+  if ($("chromiumPortInput")) {
+    const configuredPort = localStorage.getItem("chromium_automation_port") || data.config?.chromium_automation_port || "";
+    $("chromiumPortInput").value = configuredPort ? String(configuredPort) : "";
   }
 
   state.generationModes = data.generation_modes || [];
@@ -531,19 +547,68 @@ function downloadOutput() {
   URL.revokeObjectURL(url);
 }
 
+function activeChatGptImages() {
+  const spec = currentModeSpec();
+  return spec.kind === "generic" ? state.genericImages : state.images;
+}
+
+function formatAutomationError(error) {
+  if (!error) return tr("error.chatgpt_image", "Không tự tạo ảnh trên ChatGPT được.");
+  const debug = error.debug_dir ? ` Debug: ${error.debug_dir}` : "";
+  return `${error.code || "CHATGPT_AUTOMATION_ERROR"}: ${error.message || tr("error.chatgpt_image", "Không tự tạo ảnh trên ChatGPT được.")}${debug}`;
+}
+
 async function handoff() {
+  if (state.handoffRunning) return;
   const promptText = state.outputText.trim();
   if (!promptText) return;
-  const response = await window.pywebview.api.open_chatgpt({
-    profile_id: null,
-    prompt_text: promptText,
-  });
-  if (response.ok) {
-    setStatus(tr("status.chatgpt_opened", "?? m? ChatGPT"), "ok");
-    showMessage(response.prompt_file ? tr("message.saved_handoff", "?? l?u handoff: {file}", { file: response.prompt_file }) : tr("message.chatgpt_opened", "?? m? ChatGPT."), "ok");
-  } else {
-    setStatus(tr("status.chrome_error", "Kh?ng m? ???c Chrome"), "error");
-    showMessage(response.error || tr("error.open_chatgpt", "Kh?ng m? ???c ChatGPT."), "error");
+  state.handoffRunning = true;
+  setStatus(tr("status.chatgpt_image_running", "Đang gửi sang ChatGPT..."));
+  $("handoffBtn").disabled = true;
+  $("handoffBtn").classList.add("is-loading");
+  try {
+    const response = await window.pywebview.api.auto_generate_chatgpt_image({
+      mode: currentModeSpec().id,
+      prompt_text: promptText,
+      images: activeChatGptImages(),
+      auto_submit: true,
+      download_dir: $("downloadDirInput")?.value?.trim() || "",
+      chromium_profile_manager_url: $("chromiumManagerInput")?.value?.trim() || "",
+      chromium_profile_id: $("chromiumProfileIdInput")?.value?.trim() || "",
+      chromium_automation_port: $("chromiumPortInput")?.value?.trim() || "",
+    });
+    if (response.ok) {
+      setStatus(tr("status.chatgpt_image_sent", "Đã gửi sang ChatGPT"), "ok");
+      const networkSummary = response.upload_events?.length
+        ? ` Đã xác nhận upload ${response.upload_events.length} ảnh theo thứ tự bằng network request.`
+        : "";
+      const generationSummary = response.generation_event?.detected_by
+        ? " Đã xác nhận ảnh tạo xong trước khi tải."
+        : "";
+      const requestDownloadSummary =
+        response.download_method === "request" && response.image_verified
+          ? " Da tai bang request va xac nhan file tai ve la anh."
+          : "";
+      showMessage(
+        (response.downloaded_path
+          ? tr("message.chatgpt_image_downloaded", "Đã tạo và tải ảnh về: {path}", { path: response.downloaded_path })
+          : tr("message.chatgpt_image_sent", "Đã upload {count} ảnh, nhập prompt và bấm gửi trên ChatGPT.", { count: response.uploaded_count || 0 }))
+          + networkSummary
+          + generationSummary
+          + requestDownloadSummary,
+        "ok"
+      );
+    } else {
+      setStatus(tr("status.chrome_error", "Không mở được Chrome"), "error");
+      showMessage(formatAutomationError(response.error), "error");
+    }
+  } catch (err) {
+    setStatus(tr("status.chrome_error", "Không mở được Chrome"), "error");
+    showMessage(err?.message || String(err), "error");
+  } finally {
+    state.handoffRunning = false;
+    $("handoffBtn").classList.remove("is-loading");
+    updateOutputActions();
   }
 }
 
@@ -562,6 +627,36 @@ function updateOutputActions() {
   $("handoffBtn").disabled = !hasOutput;
   $("copyBtn").disabled = !hasOutput;
   $("downloadBtn").disabled = !hasOutput;
+}
+
+function setSidebarCollapsed(collapsed) {
+  const shell = document.querySelector(".dashboard-shell");
+  shell?.classList.toggle("is-sidebar-collapsed", collapsed);
+  $("sidebarToggle")?.setAttribute("aria-expanded", String(!collapsed));
+  $("sidebarToggle")?.setAttribute("aria-label", collapsed ? "Mở rộng menu" : "Thu gọn menu");
+  if (collapsed && document.activeElement === $("sidebarToggle")) {
+    $("sidebarToggle").blur();
+  }
+  localStorage.setItem("iaa_sidebar_collapsed", collapsed ? "1" : "0");
+}
+
+function switchDashboardSection(section) {
+  const target = section || "generator";
+  document.querySelectorAll("[data-dashboard-section]").forEach((element) => {
+    element.hidden = element.dataset.dashboardSection !== target;
+  });
+  document.querySelectorAll(".sidebar-item[data-section]").forEach((button) => {
+    const active = button.dataset.section === target;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-current", active ? "page" : "false");
+  });
+  const labels = {
+    generator: "Prompt Generator",
+    history: "History",
+    automation: "Automation",
+  };
+  if ($("workspaceTitle")) $("workspaceTitle").textContent = labels[target] || labels.generator;
+  localStorage.setItem("iaa_dashboard_section", target);
 }
 
 for (const [role, refs] of Object.entries(roleUploads)) {
@@ -587,6 +682,13 @@ $("modeHelpToggle").addEventListener("click", () => {
   $("modeHelpToggle").setAttribute("aria-expanded", String(!$("modeHelper").hidden));
 });
 $("heroGenerateBtn").addEventListener("click", generatePrompt);
+$("sidebarToggle").addEventListener("click", () => {
+  const collapsed = !document.querySelector(".dashboard-shell")?.classList.contains("is-sidebar-collapsed");
+  setSidebarCollapsed(collapsed);
+});
+document.querySelectorAll(".sidebar-item[data-section]").forEach((button) => {
+  button.addEventListener("click", () => switchDashboardSection(button.dataset.section));
+});
 $("settingsBtn").addEventListener("click", () => {
   $("settingsModal").hidden = false;
 });
@@ -629,6 +731,18 @@ $("languageSelect").addEventListener("change", async () => {
   await window.I18n.setLang($("languageSelect").value);
   $("languageSelect").value = window.I18n.getLang();
 });
+$("downloadDirInput").addEventListener("input", () => {
+  localStorage.setItem("chatgpt_download_dir", $("downloadDirInput").value.trim());
+});
+$("chromiumManagerInput").addEventListener("input", () => {
+  localStorage.setItem("chromium_profile_manager_url", $("chromiumManagerInput").value.trim());
+});
+$("chromiumProfileIdInput").addEventListener("input", () => {
+  localStorage.setItem("chromium_profile_id", $("chromiumProfileIdInput").value.trim());
+});
+$("chromiumPortInput").addEventListener("input", () => {
+  localStorage.setItem("chromium_automation_port", $("chromiumPortInput").value.trim());
+});
 
 window.addEventListener("pywebviewready", bootstrap);
 window.I18n?.bootstrap?.().then(() => {
@@ -638,3 +752,5 @@ window.I18n?.bootstrap?.().then(() => {
 });
 renderOutput();
 updateOutputActions();
+setSidebarCollapsed(localStorage.getItem("iaa_sidebar_collapsed") === "1");
+switchDashboardSection(localStorage.getItem("iaa_dashboard_section") || "generator");

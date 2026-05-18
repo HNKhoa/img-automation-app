@@ -19,10 +19,6 @@
       dom.targetField.classList.toggle("is-collapsed", !isOutfit);
       dom.targetField.setAttribute("aria-hidden", String(!isOutfit));
     }
-    if (dom.handoffBtn) {
-      dom.handoffBtn.classList.toggle("is-collapsed", !isOutfit);
-      dom.handoffBtn.setAttribute("aria-hidden", String(!isOutfit));
-    }
     dom.genericReferenceUpload.hidden = isOutfit || !modeSpec.allow_images;
     dom.modePurpose.textContent = modeSpec.purpose || "";
     dom.modeUsage.textContent = modeSpec.usage || "";

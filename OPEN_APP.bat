@@ -1,4 +1,4 @@
 @echo off
-cd /d "%~dp0dist\Img automation App Portable"
-start "" "Img automation App Portable.exe"
+cd "C:\Users\hongu\Documents\tool_vibe_code\app prompt"
+.\.venv\Scripts\python.exe app.py
 
