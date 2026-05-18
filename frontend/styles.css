@@ -142,7 +142,7 @@ label {
 
 .main-workspace {
   display: grid;
-  grid-template-rows: 66px minmax(0, 1fr);
+  grid-template-rows: 58px minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
   min-height: 0;
@@ -716,8 +716,14 @@ label {
   max-height: clamp(196px, 30vh, 310px);
   overflow-x: hidden;
   overflow-y: auto;
-  padding-right: 2px;
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.upload-grid::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 #outfitOnlySection.is-collapsed {
